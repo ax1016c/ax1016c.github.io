@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Feliz Cumpleaños Julia!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--ember:#ff4500;--gold:#ffd700;--crimson:#dc143c;--darker:#050505;--glow:rgba(255,69,0,.4)}
+html{scroll-behavior:smooth}
+body{background:var(--darker);color:#e8e0d4;font-family:'Crimson Text',Georgia,serif;overflow-x:hidden;min-height:100vh}
+
+/* Fire canvas */
+#fire-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.6}
+
+/* Hero */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:1;padding:2rem;
+  background:radial-gradient(ellipse at 50% 80%,rgba(255,69,0,.12) 0%,transparent 60%),radial-gradient(ellipse at 50% 0%,rgba(220,20,60,.08) 0%,transparent 50%),var(--darker)}
+.hero::before{content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='rgba(255,215,0,0.03)' stroke-width='.5'/%3E%3C/svg%3E");pointer-events:none}
+.crown{font-size:4rem;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(255,215,0,.5));margin-bottom:1rem}
+.hero h1{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(2.2rem,7vw,5rem);line-height:1.1;
+  background:linear-gradient(135deg,var(--gold),var(--ember),var(--crimson),var(--gold));background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:metalShine 4s ease infinite;margin-bottom:.5rem}
+.hero .subtitle{font-family:'Cinzel',serif;font-size:clamp(1rem,3vw,1.6rem);color:rgba(255,215,0,.7);letter-spacing:.3em;text-transform:uppercase;margin-bottom:2rem}
+.hero .dedication{max-width:500px;font-size:1.15rem;line-height:1.8;color:rgba(232,224,212,.7);font-style:italic;margin-bottom:3rem}
+.scroll-cta{animation:bounce 2s ease infinite;color:var(--gold);opacity:.5;font-size:1.5rem;cursor:pointer;text-decoration:none;position:absolute;bottom:2rem}
+
+/* Player */
+.player-section{position:relative;z-index:1;padding:4rem 1.5rem;display:flex;flex-direction:column;align-items:center;
+  background:linear-gradient(180deg,var(--darker),rgba(15,5,5,1) 50%,var(--darker))}
+.player-card{width:100%;max-width:600px;
+  background:linear-gradient(145deg,rgba(20,10,10,.9),rgba(10,5,5,.95));border:1px solid rgba(255,69,0,.15);border-radius:16px;padding:2.5rem 2rem;
+  box-shadow:0 0 60px rgba(255,69,0,.08),0 20px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,215,0,.05)}
+.player-label{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.4em;text-transform:uppercase;color:var(--ember);text-align:center;margin-bottom:.5rem}
+.player-title{font-family:'Cinzel Decorative',serif;font-size:1.5rem;text-align:center;color:var(--gold);margin-bottom:.3rem}
+.player-artist{text-align:center;font-style:italic;color:rgba(232,224,212,.5);margin-bottom:2rem;font-size:.95rem}
+
+.visualizer{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:40px;margin:1.2rem 0}
+.viz-bar{width:4px;background:linear-gradient(to top,var(--crimson),var(--ember),var(--gold));border-radius:2px;transition:height .15s ease;height:4px}
+
+.audio-controls{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.play-btn{width:56px;height:56px;border-radius:50%;border:2px solid var(--ember);
+  background:radial-gradient(circle,rgba(255,69,0,.2),transparent);color:var(--gold);font-size:1.3rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;flex-shrink:0}
+.play-btn:hover{background:radial-gradient(circle,rgba(255,69,0,.4),transparent);box-shadow:0 0 20px var(--glow);transform:scale(1.05)}
+.play-btn.playing{border-color:var(--gold);box-shadow:0 0 25px var(--glow)}
+.progress-container{flex:1;display:flex;flex-direction:column;gap:6px}
+.progress-bar{width:100%;height:6px;background:rgba(255,255,255,.08);border-radius:3px;cursor:pointer;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--crimson),var(--ember),var(--gold));border-radius:3px;transition:width .1s linear}
+.time-display{display:flex;justify-content:space-between;font-size:.75rem;color:rgba(232,224,212,.4);font-family:'Cinzel',serif;letter-spacing:.1em}
+.volume-row{display:flex;align-items:center;gap:.6rem;justify-content:center}
+.volume-row span{color:rgba(255,215,0,.5);font-size:.85rem}
+.volume-slider{-webkit-appearance:none;appearance:none;width:100px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;outline:none;cursor:pointer}
+.volume-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ember);border:2px solid var(--gold);cursor:pointer}
+
+/* Lyrics */
+.lyrics-section{position:relative;z-index:1;padding:4rem 1.5rem 6rem;
+  background:radial-gradient(ellipse at 50% 20%,rgba(220,20,60,.06) 0%,transparent 50%),var(--darker)}
+.section-header{text-align:center;margin-bottom:3rem}
+.section-header h2{font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,5vw,2.5rem);color:var(--gold);margin-bottom:.5rem}
+.section-header .line{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--ember),transparent);margin:0 auto}
+.lang-toggle{display:flex;justify-content:center;gap:.5rem;margin-bottom:2rem}
+.lang-btn{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;padding:.6rem 1.5rem;
+  border:1px solid rgba(255,69,0,.2);border-radius:6px;background:transparent;color:rgba(232,224,212,.5);cursor:pointer;transition:all .3s ease}
+.lang-btn.active{background:rgba(255,69,0,.15);border-color:var(--ember);color:var(--gold)}
+.lang-btn:hover{border-color:var(--ember)}
+.lyrics-version{display:none}.lyrics-version.active{display:block}
+.lyrics-container{max-width:650px;margin:0 auto}
+.lyrics-block{margin-bottom:2.5rem;padding:1.5rem;border-radius:10px;background:rgba(255,255,255,.02);border-left:3px solid transparent;transition:all .5s ease}
+.lyrics-block:hover{background:rgba(255,69,0,.04);border-left-color:var(--ember)}
+.lyrics-tag{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.35em;text-transform:uppercase;color:var(--ember);margin-bottom:.8rem;opacity:.7}
+.lyrics-block.chorus{background:rgba(255,69,0,.05);border-left:3px solid var(--crimson)}
+.lyrics-block.chorus .lyric-line{font-size:1.2rem;color:var(--gold);font-weight:600}
+.lyrics-block.bridge{background:rgba(255,215,0,.03);border-left:3px solid rgba(255,215,0,.3);font-style:italic}
+.lyric-line{font-size:1.05rem;line-height:2;color:rgba(232,224,212,.8)}
+
+footer{position:relative;z-index:1;text-align:center;padding:2rem 1.5rem 3rem;border-top:1px solid rgba(255,69,0,.08)}
+footer p{font-size:.8rem;color:rgba(232,224,212,.25);font-family:'Cinzel',serif;letter-spacing:.15em}
+footer .heart{color:var(--crimson);display:inline-block;animation:heartbeat 1.5s ease infinite}
+
+@keyframes metalShine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(8px)}60%{transform:translateY(4px)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{opacity:0;animation:fadeUp .8s ease forwards}
+.fade-in:nth-child(1){animation-delay:.1s}.fade-in:nth-child(2){animation-delay:.25s}
+.fade-in:nth-child(3){animation-delay:.4s}.fade-in:nth-child(4){animation-delay:.55s}
+@media(max-width:480px){.player-card{padding:1.8rem 1.2rem}.play-btn{width:48px;height:48px;font-size:1.1rem}.lyrics-block{padding:1rem}}
+</style>
+</head>
+<body>
+<canvas id="fire-canvas"></canvas>
+
+<section class="hero">
+  <div class="crown">👑</div>
+  <h1>Feliz Cumpleaños<br>Julia</h1>
+  <p class="subtitle">Las Mañanitas</p>
+  <p class="dedication">Una tormenta de fuego y guitarras<br>para el alma más indomable que conozco.<br>Hoy el mundo entero celebra tu día.</p>
+  <a href="#player" class="scroll-cta">▼</a>
+</section>
+
+<section class="player-section" id="player">
+  <div class="player-card fade-in">
+    <div class="player-label">Now Playing</div>
+    <div class="player-title">Las Mañanitas</div>
+    <div class="visualizer" id="visualizer"></div>
+    <div class="audio-controls">
+      <button class="play-btn" id="playBtn" title="Play / Pause">▶</button>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="time-display"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+      </div>
+    </div>
+    <div class="volume-row">
+      <span>🔊</span>
+      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.8">
+    </div>
+  </div>
+</section>
+
+<section class="lyrics-section">
+  <div class="section-header"><h2>⚔ Lyrics ⚔</h2><div class="line"></div></div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="es">Español</button>
+    <button class="lang-btn" data-lang="en">English</button>
+  </div>
+
+  <!-- ESPAÑOL -->
+  <div class="lyrics-container lyrics-version active" id="lyrics-es">
+    <div class="lyrics-block fade-in"><div class="lyrics-tag">Intro — Clean Guitar + Distant Trumpet Melody</div></div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Verse I</div>
+      <p class="lyric-line">Estas son las mañanitas</p><p class="lyric-line">que cantaba el rey David</p>
+      <p class="lyric-line">pero hoy las canto en fuego</p><p class="lyric-line">con guitarras de metal sin fin</p><br>
+      <p class="lyric-line">Despierta, mi bien, despierta</p><p class="lyric-line">mira que ya amaneció</p>
+      <p class="lyric-line">las aves ya están cantando</p><p class="lyric-line">y la luna ya se hundió</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Pre-Chorus</div>
+      <p class="lyric-line">El día que tú naciste</p><p class="lyric-line">tembló la tierra al rugir</p>
+      <p class="lyric-line">las flores se encendieron</p><p class="lyric-line">y el cielo empezó a crujir</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Chorus — Full Band, Aggressive</div>
+      <p class="lyric-line">¡DESPIERTA! ¡DESPIERTA!</p><p class="lyric-line">Que la mañana es una tormenta</p>
+      <p class="lyric-line">cada año que vives es una guerra ganada</p><p class="lyric-line">¡feliz día, alma indomada!</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Verse II</div>
+      <p class="lyric-line">Quisiera ser un rayo</p><p class="lyric-line">quisiera ser trueno y sol</p>
+      <p class="lyric-line">para entrar por tu ventana</p><p class="lyric-line">y despertarte con mi voz</p><br>
+      <p class="lyric-line">Ya viene amaneciendo</p><p class="lyric-line">ya la luz cubrió el lugar</p>
+      <p class="lyric-line">levántate que el mundo entero</p><p class="lyric-line">hoy te viene a celebrar</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Pre-Chorus</div>
+      <p class="lyric-line">No importa lo que venga</p><p class="lyric-line">ni el fuego ni el dolor</p>
+      <p class="lyric-line">porque hoy es tu mañana</p><p class="lyric-line">y cantas con todo el valor</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Chorus</div>
+      <p class="lyric-line">¡DESPIERTA! ¡DESPIERTA!</p><p class="lyric-line">Que la mañana es una tormenta</p>
+      <p class="lyric-line">cada año que vives es una guerra ganada</p><p class="lyric-line">¡feliz día, alma indomada!</p>
+    </div>
+    <div class="lyrics-block bridge fade-in">
+      <div class="lyrics-tag">Bridge — Breakdown, Half-time</div>
+      <p class="lyric-line">Las estrellas caen... el cielo se abre...</p><p class="lyric-line">y entre las cenizas... tú sigues de pie...</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Final Chorus — Epic, All Instruments</div>
+      <p class="lyric-line">¡DESPIERTA! ¡DESPIERTA!</p><p class="lyric-line">QUE LA MAÑANA ES UNA TORMENTA</p>
+      <p class="lyric-line">CADA AÑO QUE VIVES ES UNA GUERRA GANADA</p><p class="lyric-line">¡FELIZ DÍA, ALMA INDOMADA!</p>
+    </div>
+    <div class="lyrics-block fade-in"><div class="lyrics-tag">Outro — Fade with Clean Guitar Melody</div></div>
+  </div>
+
+  <!-- ENGLISH -->
+  <div class="lyrics-container lyrics-version" id="lyrics-en">
+    <div class="lyrics-block fade-in"><div class="lyrics-tag">Intro — Clean Guitar + Distant Trumpet Melody</div></div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Verse I</div>
+      <p class="lyric-line">This is the morning anthem</p><p class="lyric-line">that the ancient king once sang</p>
+      <p class="lyric-line">but today I sing it in fire</p><p class="lyric-line">with guitars that roar and bang</p><br>
+      <p class="lyric-line">Wake up now, my darling, wake up</p><p class="lyric-line">can't you see the dawn has come</p>
+      <p class="lyric-line">all the birds are screaming louder</p><p class="lyric-line">and the moon has finally run</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Pre-Chorus</div>
+      <p class="lyric-line">The day that you were born</p><p class="lyric-line">the earth began to shake</p>
+      <p class="lyric-line">the flowers burst in flames</p><p class="lyric-line">and the sky started to break</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Chorus — Full Band, Aggressive</div>
+      <p class="lyric-line">WAKE UP! WAKE UP!</p><p class="lyric-line">The morning is a raging storm</p>
+      <p class="lyric-line">every year you've lived is a battle won</p><p class="lyric-line">happy day, untamed and reborn!</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Verse II</div>
+      <p class="lyric-line">I wish I were a lightning bolt</p><p class="lyric-line">I wish I were the thunder and sun</p>
+      <p class="lyric-line">to crash right through your window</p><p class="lyric-line">and wake you with this song</p><br>
+      <p class="lyric-line">The light is overtaking</p><p class="lyric-line">the darkness fades away</p>
+      <p class="lyric-line">so rise because the whole damn world</p><p class="lyric-line">has come to celebrate your day</p>
+    </div>
+    <div class="lyrics-block fade-in">
+      <div class="lyrics-tag">Pre-Chorus</div>
+      <p class="lyric-line">No matter what awaits us</p><p class="lyric-line">no fire and no pain</p>
+      <p class="lyric-line">because today belongs to you</p><p class="lyric-line">and you will rise again</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Chorus</div>
+      <p class="lyric-line">WAKE UP! WAKE UP!</p><p class="lyric-line">The morning is a raging storm</p>
+      <p class="lyric-line">every year you've lived is a battle won</p><p class="lyric-line">happy day, untamed and reborn!</p>
+    </div>
+    <div class="lyrics-block bridge fade-in">
+      <div class="lyrics-tag">Bridge — Breakdown, Half-time</div>
+      <p class="lyric-line">The stars are falling... the sky is torn apart...</p><p class="lyric-line">and from the ashes... you still stand...</p>
+    </div>
+    <div class="lyrics-block chorus fade-in">
+      <div class="lyrics-tag">Final Chorus — Epic, All Instruments</div>
+      <p class="lyric-line">WAKE UP! WAKE UP!</p><p class="lyric-line">THE MORNING IS A RAGING STORM</p>
+      <p class="lyric-line">EVERY YEAR YOU'VE LIVED IS A BATTLE WON</p><p class="lyric-line">HAPPY DAY, UNTAMED AND REBORN!</p>
+    </div>
+    <div class="lyrics-block fade-in"><div class="lyrics-tag">Outro — Fade with Clean Guitar Melody</div></div>
+  </div>
+</section>
+
+<footer><p>Hecho con <span class="heart">♥</span> y mucho metal · Para Julia · nokia.lsd</p></footer>
+
+<script>
+// Fire particles
+const canvas=document.getElementById('fire-canvas'),ctx=canvas.getContext('2d');let particles=[];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+class Particle{constructor(){this.reset()}
+reset(){this.x=Math.random()*canvas.width;this.y=canvas.height+10;this.vx=(Math.random()-.5)*.8;this.vy=-(Math.random()*1.5+.5);this.life=Math.random()*120+60;this.maxLife=this.life;this.size=Math.random()*2.5+.5;const c=['255,69,0','255,140,0','255,215,0','220,20,60'];this.color=c[Math.floor(Math.random()*c.length)]}
+update(){this.x+=this.vx;this.y+=this.vy;this.life--;if(this.life<=0)this.reset()}
+draw(){const a=(this.life/this.maxLife)*.6;ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${a})`;ctx.fill()}}
+for(let i=0;i<80;i++)particles.push(new Particle());
+!function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(anim)}();
+
+// Visualizer
+const vizC=document.getElementById('visualizer');
+for(let i=0;i<32;i++){const b=document.createElement('div');b.classList.add('viz-bar');vizC.appendChild(b)}
+const vizBars=document.querySelectorAll('.viz-bar');
+let audioCtx,analyser,source,dataArray,srcConn=false;
+function initAudio(){
+  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();analyser=audioCtx.createAnalyser();analyser.fftSize=64;dataArray=new Uint8Array(analyser.frequencyBinCount)}
+  if(!srcConn){source=audioCtx.createMediaElementSource(audio);source.connect(analyser);analyser.connect(audioCtx.destination);srcConn=true}}
+!function vizLoop(){
+  if(analyser&&!audio.paused){analyser.getByteFrequencyData(dataArray);vizBars.forEach((b,i)=>{b.style.height=Math.max(3,(dataArray[i]||0)/255*38)+'px'})}
+  else vizBars.forEach(b=>{b.style.height=(Math.random()*4+2)+'px'});
+  requestAnimationFrame(vizLoop)}();
+
+// Audio — loads song.mp3 from same directory
+const audio=new Audio('song.mp3');
+audio.preload='metadata';audio.volume=.8;audio.crossOrigin='anonymous';
+const playBtn=document.getElementById('playBtn'),progressBar=document.getElementById('progressBar'),
+  progressFill=document.getElementById('progressFill'),currentTimeEl=document.getElementById('currentTime'),
+  durationEl=document.getElementById('duration'),volumeSlider=document.getElementById('volumeSlider');
+let isPlaying=false;
+function fmt(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc}
+
+playBtn.addEventListener('click',()=>{
+  initAudio();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  if(isPlaying){audio.pause();playBtn.textContent='▶';playBtn.classList.remove('playing')}
+  else{audio.play();playBtn.textContent='⏸';playBtn.classList.add('playing')}
+  isPlaying=!isPlaying});
+audio.addEventListener('timeupdate',()=>{progressFill.style.width=(audio.currentTime/audio.duration)*100+'%';currentTimeEl.textContent=fmt(audio.currentTime)});
+audio.addEventListener('loadedmetadata',()=>{durationEl.textContent=fmt(audio.duration)});
+audio.addEventListener('ended',()=>{isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('playing');progressFill.style.width='0%'});
+progressBar.addEventListener('click',e=>{const r=progressBar.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration});
+volumeSlider.addEventListener('input',e=>{audio.volume=e.target.value});
+
+// Language toggle
+document.querySelectorAll('.lang-btn').forEach(btn=>{btn.addEventListener('click',()=>{
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.lyrics-version').forEach(v=>v.classList.remove('active'));
+  document.getElementById('lyrics-'+btn.dataset.lang).classList.add('active')})});
+
+// Scroll animations
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.style.animationPlayState='running'})},{threshold:.1});
+document.querySelectorAll('.fade-in').forEach(el=>{el.style.animationPlayState='paused';obs.observe(el)});
+</script>
+</body>
+</html>
